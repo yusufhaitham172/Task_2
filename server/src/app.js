@@ -2,6 +2,7 @@ import express from 'express';
 import morgan from 'morgan';
 import cors from 'cors';
 import authRoutes from './routes/auth.js';
+
 import perkRoutes from './routes/perks.js';
 
 const app = express();
@@ -27,3 +28,4 @@ app.use((err, req, res, next) => {
 });
 
 export default app;
+

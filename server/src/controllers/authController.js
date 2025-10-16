@@ -21,7 +21,9 @@ export async function register(req, res, next) {
     const user = await User.create({ name: value.name, email: value.email, passwordHash });
     const token = signToken(user);
     res.status(201).json({ token, user: publicUser(user) });
-  } catch (err) { next(err); }
+  } catch (err) {
+    next(err);
+  }
 }
 
 const loginSchema = Joi.object({
@@ -29,9 +31,31 @@ const loginSchema = Joi.object({
   password: Joi.string().required()
 });
 
-// TODO: implement login function
+// ✅ Implemented login function
 export async function login(req, res, next) {
- 
+  try {
+    // 1️⃣ Validate input
+    const { value, error } = loginSchema.validate(req.body);
+    if (error) return res.status(400).json({ message: error.message });
+
+    const { email, password } = value;
+
+    // 2️⃣ Find user
+    const user = await User.findOne({ email });
+    if (!user) return res.status(401).json({ message: 'Invalid email or password' });
+
+    // 3️⃣ Check password
+    const isMatch = await bcrypt.compare(password, user.passwordHash);
+    if (!isMatch) return res.status(401).json({ message: 'Invalid email or password' });
+
+    // 4️⃣ Sign JWT token
+    const token = signToken(user);
+
+    // 5️⃣ Return success response
+    res.json({ token, user: publicUser(user) });
+  } catch (err) {
+    next(err);
+  }
 }
 
 export async function me(req, res) {
